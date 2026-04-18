@@ -9,7 +9,7 @@ on:
 
 jobs:
   ci:
-    name: Build and push Docker image
+    name: CI
     runs-on: ubuntu-latest
 
     steps:
@@ -41,18 +41,19 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/python-app-backstage:${{ env.COMMIT_ID }}
 
   cd:
+    name: CD
     needs: ci
     runs-on: self-hosted
     steps:
 
-      - name: Argocd app sync
+      - name: Install Argo CD CLI
         shell: bash
         run: |
-          curl -ksSL -o argocd-linux-amd64 https://argocd-server.argocd/download/argocd-linux-amd64
+          curl -ksSL -o argocd https://argocd-server.argocd/download/argocd-linux-amd64
           chmod +x argocd
           sudo mv ./argocd /usr/local/bin/argocd
 
-      - name: Argocd app sync
+      - name: Argo CD app sync
         shell: bash
         run: |
           argocd login argocd-server.argocd \
