@@ -8,9 +8,9 @@ on:
       - master
 
 jobs:
-  docker:
+  ci:
     name: Build and push Docker image
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -39,3 +39,19 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/python-app-backstage:${{ env.COMMIT_ID }}
+
+  cd:
+    needs: ci
+    runs-on: self-hosted
+    steps:
+
+      - name: Argocd app sync
+        shell: bash
+        run: |
+          argocd login argocd-server.argocd \
+            --insecure \
+            --grpc-web \
+            --username admin \
+            --password ${{ secrets.ARGOCD_PASSWORD }}
+          argocd app sync python-app-backstage
+        
